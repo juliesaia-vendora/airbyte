@@ -8,20 +8,45 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
+interface AirbyteValueMapper {
+    val meta: DestinationRecord.Meta
+    fun map(
+        value: AirbyteValue,
+        schema: AirbyteType,
+        path: List<String> = emptyList(),
+    ): AirbyteValue
+}
+
+/** An optimized identity mapper that just passes through. */
+class AirbyteValueNoopMapper(
+    override val meta: DestinationRecord.Meta,
+) : AirbyteValueMapper {
+    override fun map(
+        value: AirbyteValue,
+        schema: AirbyteType,
+        path: List<String>,
+    ): AirbyteValue = value
+}
+
 open class AirbyteValueIdentityMapper(
-    val meta: DestinationRecord.Meta,
-) {
+    override val meta: DestinationRecord.Meta,
+) : AirbyteValueMapper {
     private fun collectFailure(
         path: List<String>,
         reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
     ) {
-        meta.changes.add(DestinationRecord.Change(path.joinToString("."), Change.NULLED, reason))
+        val joined = path.joinToString(".")
+        if (meta.changes.none { it.field == joined }) {
+            meta.changes.add(
+                DestinationRecord.Change(path.joinToString("."), Change.NULLED, reason)
+            )
+        }
     }
 
-    fun map(
+    override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        path: List<String> = emptyList()
+        path: List<String>,
     ): AirbyteValue =
         try {
             when (schema) {
