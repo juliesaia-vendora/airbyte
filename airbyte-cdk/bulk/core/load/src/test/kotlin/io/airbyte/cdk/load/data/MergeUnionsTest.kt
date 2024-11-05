@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class MergeUnionsTest {
     @Test
@@ -17,16 +16,16 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(
-                            ObjectType(
-                                properties =
-                                    linkedMapOf(
-                                        "foo" to FieldType(StringType, false),
-                                        "bar" to FieldType(IntegerType, false)
-                                    )
-                            ),
-                            nullable = false
-                        )
+                    FieldType(
+                        ObjectType(
+                            properties =
+                            linkedMapOf(
+                                "foo" to FieldType(StringType, false),
+                                "bar" to FieldType(IntegerType, false)
+                            )
+                        ),
+                        nullable = false
+                    )
                 )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
@@ -41,10 +40,25 @@ class MergeUnionsTest {
     }
 
     @Test
-    fun testNameClashFails() {
-        val (inputSchema, _) =
+    fun testNameClash() {
+        val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion()
+                .withUnion(
+                    expectedInstead =
+                    FieldType(
+                        ObjectType(
+                            properties =
+                            linkedMapOf(
+                                "foo" to
+                                    FieldType(
+                                        UnionType(listOf(StringType, IntegerType)),
+                                        false
+                                    )
+                            )
+                        ),
+                        false
+                    )
+                )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
                 .endRecord()
@@ -53,7 +67,8 @@ class MergeUnionsTest {
                 .endRecord()
                 .endUnion()
                 .build()
-        assertThrows<IllegalArgumentException> { MergeUnions().map(inputSchema) }
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
     }
 
     @Test
@@ -62,7 +77,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                    FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
                 )
                 .with(StringType)
                 .with(IntegerType)
@@ -79,7 +94,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                    FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
                 )
                 .with(StringType)
                 .with(UnionType(listOf(StringType, UnionType(listOf(IntegerType, StringType)))))

@@ -14,10 +14,10 @@ interface AirbyteValueMapper {
         value: AirbyteValue,
         schema: AirbyteType,
         path: List<String> = emptyList(),
+        nullable: Boolean = false
     ): AirbyteValue
 }
 
-/** An optimized identity mapper that just passes through. */
 class AirbyteValueNoopMapper(
     override val meta: DestinationRecord.Meta,
 ) : AirbyteValueMapper {
@@ -25,6 +25,7 @@ class AirbyteValueNoopMapper(
         value: AirbyteValue,
         schema: AirbyteType,
         path: List<String>,
+        nullable: Boolean
     ): AirbyteValue = value
 }
 
@@ -47,35 +48,51 @@ open class AirbyteValueIdentityMapper(
         value: AirbyteValue,
         schema: AirbyteType,
         path: List<String>,
+        nullable: Boolean,
     ): AirbyteValue =
         try {
-            when (schema) {
-                is ObjectType -> mapObject(value as ObjectValue, schema, path)
-                is ObjectTypeWithoutSchema ->
-                    mapObjectWithoutSchema(value as ObjectValue, schema, path)
-                is ObjectTypeWithEmptySchema ->
-                    mapObjectWithEmptySchema(value as ObjectValue, schema, path)
-                is ArrayType -> mapArray(value as ArrayValue, schema, path)
-                is ArrayTypeWithoutSchema ->
-                    mapArrayWithoutSchema(value as ArrayValue, schema, path)
-                is UnionType -> mapUnion(value, schema, path)
-                is BooleanType -> mapBoolean(value as BooleanValue, path)
-                is NumberType -> mapNumber(value as NumberValue, path)
-                is StringType -> mapString(value as StringValue, path)
-                is IntegerType -> mapInteger(value as IntegerValue, path)
-                is DateType -> mapDate(value as DateValue, path)
-                is TimeTypeWithTimezone -> mapTimeWithTimezone(value as TimeValue, path)
-                is TimeTypeWithoutTimezone -> mapTimeWithoutTimezone(value as TimeValue, path)
-                is TimestampTypeWithTimezone ->
-                    mapTimestampWithTimezone(value as TimestampValue, path)
-                is TimestampTypeWithoutTimezone ->
-                    mapTimestampWithoutTimezone(value as TimestampValue, path)
-                is UnknownType -> {
-                    collectFailure(path)
-                    mapNull(path)
+            if (nullable && value is NullValue) {
+                mapNull(path)
+            } else {
+                when (schema) {
+                    is ObjectType -> mapObject(value as ObjectValue, schema, path)
+                    is ObjectTypeWithoutSchema ->
+                        mapObjectWithoutSchema(value as ObjectValue, schema, path)
+                    is ObjectTypeWithEmptySchema ->
+                        mapObjectWithEmptySchema(value as ObjectValue, schema, path)
+                    is ArrayType -> mapArray(value as ArrayValue, schema, path)
+                    is ArrayTypeWithoutSchema ->
+                        mapArrayWithoutSchema(value as ArrayValue, schema, path)
+                    is UnionType -> mapUnion(value, schema, path)
+                    is BooleanType -> mapBoolean(value as BooleanValue, path)
+                    is NumberType -> mapNumber(value as NumberValue, path)
+                    is StringType -> mapString(value as StringValue, path)
+                    is IntegerType -> mapInteger(value as IntegerValue, path)
+                    is DateType -> mapDate(value as DateValue, path)
+                    is TimeTypeWithTimezone ->
+                        mapTimeWithTimezone(
+                            value as TimeValue,
+                            path,
+                        )
+                    is TimeTypeWithoutTimezone ->
+                        mapTimeWithoutTimezone(
+                            value as TimeValue,
+                            path,
+                        )
+                    is TimestampTypeWithTimezone ->
+                        mapTimestampWithTimezone(value as TimestampValue, path)
+                    is TimestampTypeWithoutTimezone ->
+                        mapTimestampWithoutTimezone(value as TimestampValue, path)
+                    is UnknownType -> mapUnknown(value, path)
                 }
             }
         } catch (e: Exception) {
+            if (!nullable) {
+                throw IllegalStateException(
+                    "Cannot null out non-nullable field at path: ${path.joinToString(".")}",
+                    e
+                )
+            }
             collectFailure(path)
             mapNull(path)
         }
@@ -83,7 +100,8 @@ open class AirbyteValueIdentityMapper(
     open fun mapObject(value: ObjectValue, schema: ObjectType, path: List<String>): AirbyteValue {
         val values = LinkedHashMap<String, AirbyteValue>()
         schema.properties.forEach { (name, field) ->
-            values[name] = map(value.values[name] ?: NullValue, field.type, path + name)
+            values[name] =
+                map(value.values[name] ?: NullValue, field.type, path + name, field.nullable)
         }
         return ObjectValue(values)
     }
@@ -103,7 +121,7 @@ open class AirbyteValueIdentityMapper(
     open fun mapArray(value: ArrayValue, schema: ArrayType, path: List<String>): AirbyteValue {
         return ArrayValue(
             value.values.mapIndexed { index, element ->
-                map(element, schema.items.type, path + "[$index]")
+                map(element, schema.items.type, path + "[$index]", schema.items.nullable)
             }
         )
     }
@@ -138,4 +156,6 @@ open class AirbyteValueIdentityMapper(
         value
 
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
+
+    open fun mapUnknown(value: AirbyteValue, path: List<String>): AirbyteValue = value
 }

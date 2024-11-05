@@ -134,4 +134,25 @@ class MapperPipelineTest {
 
         Assertions.assertEquals(2, result.meta?.changes?.size, "two failures were captured")
     }
+
+
+    @Test
+    fun testFailedMappingThrowsOnNonNullable() {
+        val (inputValue, inputSchema, _) =
+            ValueTestBuilder<Root>()
+                .with(IntegerValue(2), IntegerType, NullValue, nullable = false) // fail: reject 2
+                .build()
+
+        val mockRecord =
+            DestinationRecord(
+                MockDestinationCatalogFactory.stream1.descriptor,
+                data = inputValue,
+                0L,
+                DestinationRecord.Meta(),
+                "dummy"
+            )
+        val pipeline = makePipeline(inputSchema)
+
+        Assertions.assertThrows(IllegalStateException::class.java) { pipeline.map(mockRecord) }
+    }
 }

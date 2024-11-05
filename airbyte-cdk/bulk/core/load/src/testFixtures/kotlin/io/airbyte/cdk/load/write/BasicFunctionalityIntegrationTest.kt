@@ -113,15 +113,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         data = """{"id": 5678, "undeclared": "asdf"}""",
                         emittedAtMs = 1234,
                         changes =
-                            mutableListOf(
-                                DestinationRecord.Change(
-                                    field = "foo",
-                                    change = AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    reason =
-                                        AirbyteRecordMessageMetaChange.Reason
-                                            .SOURCE_FIELD_SIZE_LIMITATION
-                                )
+                        mutableListOf(
+                            DestinationRecord.Change(
+                                field = "foo",
+                                change = AirbyteRecordMessageMetaChange.Change.NULLED,
+                                reason =
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .SOURCE_FIELD_SIZE_LIMITATION
                             )
+                        )
                     ),
                     StreamCheckpoint(
                         streamName = "test_stream",
@@ -142,12 +142,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
                 assertEquals(
                     StreamCheckpoint(
-                            streamName = "test_stream",
-                            streamNamespace = randomizedNamespace,
-                            blob = """{"foo": "bar"}""",
-                            sourceRecordCount = 1,
-                            destinationRecordCount = 1,
-                        )
+                        streamName = "test_stream",
+                        streamNamespace = randomizedNamespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                        destinationRecordCount = 1,
+                    )
                         .asProtocolMessage(),
                     stateMessages.first()
                 )
@@ -161,27 +161,27 @@ abstract class BasicFunctionalityIntegrationTest(
                                 extractedAt = 1234,
                                 generationId = 0,
                                 data =
-                                    if (preserveUndeclaredFields) {
-                                        mapOf("id" to 5678, "undeclared" to "asdf")
-                                    } else {
-                                        mapOf("id" to 5678)
-                                    },
+                                if (preserveUndeclaredFields) {
+                                    mapOf("id" to 5678, "undeclared" to "asdf")
+                                } else {
+                                    mapOf("id" to 5678)
+                                },
                                 airbyteMeta =
-                                    OutputRecord.Meta(
-                                        changes =
-                                            mutableListOf(
-                                                DestinationRecord.Change(
-                                                    field = "foo",
-                                                    change =
-                                                        AirbyteRecordMessageMetaChange.Change
-                                                            .NULLED,
-                                                    reason =
-                                                        AirbyteRecordMessageMetaChange.Reason
-                                                            .SOURCE_FIELD_SIZE_LIMITATION
-                                                )
-                                            ),
-                                        syncId = 42
-                                    )
+                                OutputRecord.Meta(
+                                    changes =
+                                    mutableListOf(
+                                        DestinationRecord.Change(
+                                            field = "foo",
+                                            change =
+                                            AirbyteRecordMessageMetaChange.Change
+                                                .NULLED,
+                                            reason =
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .SOURCE_FIELD_SIZE_LIMITATION
+                                        )
+                                    ),
+                                    syncId = 42
+                                )
                             )
                         ),
                         stream,
@@ -211,11 +211,11 @@ abstract class BasicFunctionalityIntegrationTest(
                     "write",
                     configContents,
                     DestinationCatalog(
-                            listOf(
-                                makeStream("test_stream1"),
-                                makeStream("test_stream2"),
-                            )
+                        listOf(
+                            makeStream("test_stream1"),
+                            makeStream("test_stream2"),
                         )
+                    )
                         .asProtocolObject(),
                 )
             launch {
@@ -230,32 +230,32 @@ abstract class BasicFunctionalityIntegrationTest(
             // Send one record+state to each stream
             destination.sendMessages(
                 DestinationRecord(
-                        namespace = randomizedNamespace,
-                        name = "test_stream1",
-                        data = """{"id": 12}""",
-                        emittedAtMs = 1234,
-                    )
+                    namespace = randomizedNamespace,
+                    name = "test_stream1",
+                    data = """{"id": 12}""",
+                    emittedAtMs = 1234,
+                )
                     .asProtocolMessage(),
                 StreamCheckpoint(
-                        streamNamespace = randomizedNamespace,
-                        streamName = "test_stream1",
-                        blob = """{"foo": "bar1"}""",
-                        sourceRecordCount = 1
-                    )
+                    streamNamespace = randomizedNamespace,
+                    streamName = "test_stream1",
+                    blob = """{"foo": "bar1"}""",
+                    sourceRecordCount = 1
+                )
                     .asProtocolMessage(),
                 DestinationRecord(
-                        namespace = randomizedNamespace,
-                        name = "test_stream2",
-                        data = """{"id": 34}""",
-                        emittedAtMs = 1234,
-                    )
+                    namespace = randomizedNamespace,
+                    name = "test_stream2",
+                    data = """{"id": 34}""",
+                    emittedAtMs = 1234,
+                )
                     .asProtocolMessage(),
                 StreamCheckpoint(
-                        streamNamespace = randomizedNamespace,
-                        streamName = "test_stream2",
-                        blob = """{"foo": "bar2"}""",
-                        sourceRecordCount = 1
-                    )
+                    streamNamespace = randomizedNamespace,
+                    streamName = "test_stream2",
+                    blob = """{"foo": "bar2"}""",
+                    sourceRecordCount = 1
+                )
                     .asProtocolMessage()
             )
             // Send records to stream1 until we get a state message back.
@@ -267,11 +267,11 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (i < 2_000_000) {
                     destination.sendMessage(
                         DestinationRecord(
-                                namespace = randomizedNamespace,
-                                name = "test_stream1",
-                                data = """{"id": 56}""",
-                                emittedAtMs = 1234,
-                            )
+                            namespace = randomizedNamespace,
+                            name = "test_stream1",
+                            data = """{"id": 56}""",
+                            emittedAtMs = 1234,
+                        )
                             .asProtocolMessage()
                     )
                     i++
@@ -515,10 +515,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                 extractedAt = 1234,
                                 generationId = 0,
                                 data =
-                                    (stream.schema as ObjectType)
-                                        .properties
-                                        .mapValuesTo(linkedMapOf<String, Any>()) { "foo\nbar" }
-                                        .also { it["id"] = 42 },
+                                (stream.schema as ObjectType)
+                                    .properties
+                                    .mapValuesTo(linkedMapOf<String, Any>()) { "foo\nbar" }
+                                    .also { it["id"] = 42 },
                                 airbyteMeta = OutputRecord.Meta(syncId = 42)
                             )
                         ),
@@ -615,11 +615,11 @@ abstract class BasicFunctionalityIntegrationTest(
                 extractedAt = extractedAt,
                 generationId = generationId,
                 data =
-                    mapOf(
-                        "id" to id,
-                        "updated_at" to OffsetDateTime.parse(updatedAt),
-                        "name" to "foo_${id}_$extractedAt",
-                    ),
+                mapOf(
+                    "id" to id,
+                    "updated_at" to OffsetDateTime.parse(updatedAt),
+                    "name" to "foo_${id}_$extractedAt",
+                ),
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
             )
         // Run a normal sync with nonempty data
@@ -886,11 +886,11 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1234,
                     generationId = 0,
                     data =
-                        if (isStreamSchemaRetroactive)
-                        // the first sync's record has to_change modified to a string,
-                        // and to_drop is gone completely
+                    if (isStreamSchemaRetroactive)
+                    // the first sync's record has to_change modified to a string,
+                    // and to_drop is gone completely
                         mapOf("id" to 42, "to_change" to "42")
-                        else mapOf("id" to 42, "to_drop" to "val1", "to_change" to 42),
+                    else mapOf("id" to 42, "to_drop" to "val1", "to_change" to 42),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
@@ -913,21 +913,21 @@ abstract class BasicFunctionalityIntegrationTest(
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                 importType =
-                    Dedupe(
-                        primaryKey = listOf(listOf("id1"), listOf("id2")),
-                        cursor = listOf("updated_at"),
-                    ),
+                Dedupe(
+                    primaryKey = listOf(listOf("id1"), listOf("id2")),
+                    cursor = listOf("updated_at"),
+                ),
                 schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id1" to intType,
-                                "id2" to intType,
-                                "updated_at" to timestamptzType,
-                                "name" to stringType,
-                                "_ab_cdc_deleted_at" to timestamptzType,
-                            )
-                    ),
+                ObjectType(
+                    properties =
+                    linkedMapOf(
+                        "id1" to intType,
+                        "id2" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                        "_ab_cdc_deleted_at" to timestamptzType,
+                    )
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
@@ -974,25 +974,25 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1000,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id1" to 1,
-                            "id2" to 200,
-                            "updated_at" to OffsetDateTime.parse("2000-01-01T00:01:00Z"),
-                            "name" to "Alice2",
-                            "_ab_cdc_deleted_at" to null
-                        ),
+                    mapOf(
+                        "id1" to 1,
+                        "id2" to 200,
+                        "updated_at" to OffsetDateTime.parse("2000-01-01T00:01:00Z"),
+                        "name" to "Alice2",
+                        "_ab_cdc_deleted_at" to null
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1000,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id1" to 1,
-                            "id2" to 201,
-                            "updated_at" to OffsetDateTime.parse("2000-01-01T00:02:00Z"),
-                            "name" to "Bob1"
-                        ),
+                    mapOf(
+                        "id1" to 1,
+                        "id2" to 201,
+                        "updated_at" to OffsetDateTime.parse("2000-01-01T00:02:00Z"),
+                        "name" to "Bob1"
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             ),
@@ -1032,13 +1032,13 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 2000,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id1" to 1,
-                            "id2" to 200,
-                            "updated_at" to OffsetDateTime.parse("2000-01-02T00:00:00Z"),
-                            "name" to "Alice3",
-                            "_ab_cdc_deleted_at" to null
-                        ),
+                    mapOf(
+                        "id1" to 1,
+                        "id2" to 200,
+                        "updated_at" to OffsetDateTime.parse("2000-01-02T00:00:00Z"),
+                        "name" to "Alice3",
+                        "_ab_cdc_deleted_at" to null
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
             ),
@@ -1140,74 +1140,75 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1602637589100,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 1,
-                            "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
-                            "empty_object" to emptyMap<String, Any?>(),
-                            "schemaless_object" to
-                                if (stringifySchemalessObjects) {
-                                    """{"uuid":"38F52396-736D-4B23-B5B4-F504D8894B97","probability":1.5}"""
-                                } else {
-                                    mapOf(
-                                        "uuid" to "38F52396-736D-4B23-B5B4-F504D8894B97",
-                                        "probability" to 1.5
-                                    )
-                                },
-                            "schemaless_array" to
-                                if (stringifySchemalessObjects) {
-                                    """[10,"foo",null,{"bar:"qua"}]"""
-                                } else {
-                                    listOf(10, "foo", null, mapOf("bar" to "qua"))
-                                },
-                        ),
+                    mapOf(
+                        "id" to 1,
+                        "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
+                        "empty_object" to
+                            if (stringifySchemalessObjects) "{}" else emptyMap<Any, Any>(),
+                        "schemaless_object" to
+                            if (stringifySchemalessObjects) {
+                                """{"uuid":"38F52396-736D-4B23-B5B4-F504D8894B97","probability":1.5}"""
+                            } else {
+                                mapOf(
+                                    "uuid" to "38F52396-736D-4B23-B5B4-F504D8894B97",
+                                    "probability" to 1.5
+                                )
+                            },
+                        "schemaless_array" to
+                            if (stringifySchemalessObjects) {
+                                """[10,"foo",null,{"bar":"qua"}]"""
+                            } else {
+                                listOf(10, "foo", null, mapOf("bar" to "qua"))
+                            },
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1602637589200,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 2,
-                            "schematized_object" to mapOf("id" to 2, "name" to "Jane"),
-                            "empty_object" to
-                                if (stringifySchemalessObjects) {
-                                    """{"extra":"stuff"}"""
-                                } else {
-                                    mapOf("extra" to "stuff")
-                                },
-                            "schemaless_object" to
-                                if (stringifySchemalessObjects) {
-                                    """{"address":{"street":"113 Hickey Rd","zip":"37932"},"flags":[true,false,false]}"""
-                                } else {
-                                    mapOf(
-                                        "address" to
-                                            mapOf(
-                                                "street" to "113 Hickey Rd",
-                                                "zip" to "37932",
-                                            ),
-                                        "flags" to listOf(true, false, false)
-                                    )
-                                },
-                            "schemaless_array" to
-                                if (stringifySchemalessObjects) {
-                                    "[]"
-                                } else {
-                                    emptyList<Any>()
-                                },
-                        ),
+                    mapOf(
+                        "id" to 2,
+                        "schematized_object" to mapOf("id" to 2, "name" to "Jane"),
+                        "empty_object" to
+                            if (stringifySchemalessObjects) {
+                                """{"extra":"stuff"}"""
+                            } else {
+                                mapOf("extra" to "stuff")
+                            },
+                        "schemaless_object" to
+                            if (stringifySchemalessObjects) {
+                                """{"address":{"street":"113 Hickey Rd","zip":"37932"},"flags":[true,false,false]}"""
+                            } else {
+                                mapOf(
+                                    "address" to
+                                        mapOf(
+                                            "street" to "113 Hickey Rd",
+                                            "zip" to "37932",
+                                        ),
+                                    "flags" to listOf(true, false, false)
+                                )
+                            },
+                        "schemaless_array" to
+                            if (stringifySchemalessObjects) {
+                                "[]"
+                            } else {
+                                emptyList<Any>()
+                            },
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1602637589300,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 3,
-                            "schematized_object" to null,
-                            "empty_object" to null,
-                            "schemaless_object" to null,
-                            "schemaless_array" to null,
-                        ),
+                    mapOf(
+                        "id" to 3,
+                        "schematized_object" to null,
+                        "empty_object" to null,
+                        "schemaless_object" to null,
+                        "schemaless_array" to null,
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             )
@@ -1397,64 +1398,58 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1602637589100,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 1,
-                            "combined_type" to maybePromote("string", "string1"),
-                            "union_of_objects_with_properties_identical" to
-                                maybePromote("object", mapOf("id" to 10, "name" to "Joe")),
-                            "union_of_objects_with_properties_overlapping" to
-                                maybePromote(
-                                    "object",
-                                    mapOf("id" to 20, "name" to "Jane", "flagged" to true)
-                                ),
-                            "union_of_objects_with_properties_contradicting" to
-                                maybePromote("object", mapOf("id" to 1, "name" to "Jenny")),
-                            "union_of_objects_with_properties_nonoverlapping" to
-                                maybePromote(
-                                    "object",
-                                    mapOf(
-                                        "id" to 30,
-                                        "name" to "Phil",
-                                        "flagged" to false,
-                                        "description" to "Very Phil",
-                                    )
-                                ),
-                        ),
+                    mapOf(
+                        "id" to 1,
+                        "combined_type" to maybePromote("string", "string1"),
+                        "union_of_objects_with_properties_identical" to
+                            mapOf("id" to 10, "name" to "Joe"),
+                        "union_of_objects_with_properties_overlapping" to
+                            mapOf("id" to 20, "name" to "Jane", "flagged" to true),
+                        "union_of_objects_with_properties_contradicting" to
+                            mapOf("id" to maybePromote("integer", 1), "name" to "Jenny"),
+                        "union_of_objects_with_properties_nonoverlapping" to
+                            mapOf(
+                                "id" to 30,
+                                "name" to "Phil",
+                                "flagged" to false,
+                                "description" to "Very Phil",
+                            )
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1602637589200,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 2,
-                            "combined_type" to maybePromote("integer", 20),
-                            "union_of_objects_with_properties_identical" to
-                                maybePromote("object", emptyMap<String, Any?>()),
-                            "union_of_objects_with_properties_nonoverlapping" to
-                                maybePromote("object", emptyMap<String, Any?>()),
-                            "union_of_objects_with_properties_overlapping" to
-                                maybePromote("object", emptyMap<String, Any?>()),
-                            "union_of_objects_with_properties_contradicting" to
-                                maybePromote(
-                                    "object",
-                                    mapOf("id" to "seal-one-hippity", "name" to "James")
-                                ),
-                        ),
+                    mapOf(
+                        "id" to 2,
+                        "combined_type" to maybePromote("integer", 20),
+                        "union_of_objects_with_properties_identical" to
+                            emptyMap<String, Any?>(),
+                        "union_of_objects_with_properties_nonoverlapping" to
+                            emptyMap<String, Any?>(),
+                        "union_of_objects_with_properties_overlapping" to
+                            emptyMap<String, Any?>(),
+                        "union_of_objects_with_properties_contradicting" to
+                            mapOf(
+                                "id" to maybePromote("string", "seal-one-hippity"),
+                                "name" to "James"
+                            )
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1602637589300,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 3,
-                            "combined_type" to null,
-                            "union_of_objects_with_properties_identical" to null,
-                            "union_of_objects_with_properties_overlapping" to null,
-                            "union_of_objects_with_properties_nonoverlapping" to null,
-                            "union_of_objects_with_properties_contradicting" to null,
-                        ),
+                    mapOf(
+                        "id" to 3,
+                        "combined_type" to null,
+                        "union_of_objects_with_properties_identical" to null,
+                        "union_of_objects_with_properties_overlapping" to null,
+                        "union_of_objects_with_properties_nonoverlapping" to null,
+                        "union_of_objects_with_properties_contradicting" to null
+                    ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             )

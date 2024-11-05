@@ -53,7 +53,8 @@ class AirbyteValueIdentityMapperTest {
                 .with(
                     TimestampValue("2021-01-01T12:00:00Z"),
                     TimeTypeWithTimezone,
-                    nameOverride = "bad"
+                    nameOverride = "bad",
+                    nullable = true
                 )
                 .build()
         val meta = DestinationRecord.Meta()
