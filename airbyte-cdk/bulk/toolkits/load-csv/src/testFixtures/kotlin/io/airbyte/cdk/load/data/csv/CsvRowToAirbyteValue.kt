@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -26,13 +28,11 @@ import org.apache.commons.csv.CSVRecord
 
 class CsvRowToAirbyteValue {
     fun convert(row: CSVRecord, schema: AirbyteType): AirbyteValue {
+        print("converting row: $row")
         if (schema !is ObjectType) {
             throw IllegalArgumentException("Only object types are supported")
         }
         val asList = row.toList()
-        if (asList.size != schema.properties.size) {
-            throw IllegalArgumentException("Row size does not match schema size")
-        }
         val properties = linkedMapOf<String, AirbyteValue>()
         schema.properties
             .toList()
@@ -45,6 +45,9 @@ class CsvRowToAirbyteValue {
     }
 
     private fun convertInner(value: String, field: AirbyteType): AirbyteValue {
+        if (value.isBlank()) {
+            return NullValue
+        }
         return when (field) {
             is ArrayType ->
                 value
@@ -73,6 +76,19 @@ class CsvRowToAirbyteValue {
             is ObjectTypeWithoutSchema ->
                 value.deserializeToNode().toAirbyteValue(ObjectTypeWithoutSchema)
             is StringType -> StringValue(value)
+            is UnionType -> {
+                // Use the options sorted with string last since it always works
+                field.options
+                    .sortedBy { it is StringType }
+                    .firstNotNullOfOrNull { option ->
+                        try {
+                            convertInner(value, option)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    ?: NullValue
+            }
             else -> throw IllegalArgumentException("Unsupported field type: $field")
         }
     }

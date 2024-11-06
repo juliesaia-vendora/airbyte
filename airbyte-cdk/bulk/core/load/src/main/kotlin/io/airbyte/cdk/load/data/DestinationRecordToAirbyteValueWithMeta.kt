@@ -9,9 +9,12 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecord.Meta
 import java.util.*
 
-class DestinationRecordToAirbyteValueWithMeta(val stream: DestinationStream) {
-    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: DestinationRecord.Meta?): ObjectValue {
-        return ObjectValue(
+class DestinationRecordToAirbyteValueWithMeta(
+    val stream: DestinationStream,
+    private val flatten: Boolean
+) {
+    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: Meta?): ObjectValue {
+        val properties =
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(UUID.randomUUID().toString()),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(emittedAtMs),
@@ -35,11 +38,15 @@ class DestinationRecordToAirbyteValueWithMeta(val stream: DestinationStream) {
                         )
                     ),
                 Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(stream.generationId),
-                Meta.COLUMN_NAME_DATA to data
             )
-        )
+        if (flatten) {
+            properties.putAll((data as ObjectValue).values)
+        } else {
+            properties[Meta.COLUMN_NAME_DATA] = data
+        }
+        return ObjectValue(properties)
     }
 }
 
-fun DestinationRecord.dataWithAirbyteMeta(stream: DestinationStream) =
-    DestinationRecordToAirbyteValueWithMeta(stream).convert(data, emittedAtMs, meta)
+fun DestinationRecord.dataWithAirbyteMeta(stream: DestinationStream, flatten: Boolean = false) =
+    DestinationRecordToAirbyteValueWithMeta(stream, flatten).convert(data, emittedAtMs, meta)

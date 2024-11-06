@@ -45,8 +45,7 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
                     }
 
                     // Combine the fields, recursively merging unions, object fields, etc
-                    val mergedFields =
-                        mapUnion(UnionType(listOf(existingField.type, field.type)))
+                    val mergedFields = mapUnion(UnionType(listOf(existingField.type, field.type)))
                     newProperties[name] =
                         FieldType(mergedFields, existingField.nullable || field.nullable)
 

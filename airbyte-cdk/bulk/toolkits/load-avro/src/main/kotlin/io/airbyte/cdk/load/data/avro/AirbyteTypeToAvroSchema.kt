@@ -39,12 +39,12 @@ class AirbyteTypeToAvroSchema {
                         acc.name(name).let {
                             if (field.nullable && converted.type != Schema.Type.UNION) {
                                 it.type(
-                                    SchemaBuilder.unionOf()
-                                        .nullType()
-                                        .and()
-                                        .type(converted)
-                                        .endUnion()
-                                )
+                                        SchemaBuilder.unionOf()
+                                            .nullType()
+                                            .and()
+                                            .type(converted)
+                                            .endUnion()
+                                    )
                                     .withDefault(null)
                             } else if (field.nullable && converted.type == Schema.Type.UNION) {
                                 converted.types

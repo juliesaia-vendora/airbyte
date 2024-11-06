@@ -16,16 +16,16 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                    FieldType(
-                        ObjectType(
-                            properties =
-                            linkedMapOf(
-                                "foo" to FieldType(StringType, false),
-                                "bar" to FieldType(IntegerType, false)
-                            )
-                        ),
-                        nullable = false
-                    )
+                        FieldType(
+                            ObjectType(
+                                properties =
+                                    linkedMapOf(
+                                        "foo" to FieldType(StringType, false),
+                                        "bar" to FieldType(IntegerType, false)
+                                    )
+                            ),
+                            nullable = false
+                        )
                 )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
@@ -45,19 +45,19 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                    FieldType(
-                        ObjectType(
-                            properties =
-                            linkedMapOf(
-                                "foo" to
-                                    FieldType(
-                                        UnionType(listOf(StringType, IntegerType)),
-                                        false
+                        FieldType(
+                            ObjectType(
+                                properties =
+                                    linkedMapOf(
+                                        "foo" to
+                                            FieldType(
+                                                UnionType(listOf(StringType, IntegerType)),
+                                                false
+                                            )
                                     )
-                            )
-                        ),
-                        false
-                    )
+                            ),
+                            false
+                        )
                 )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
@@ -77,7 +77,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                    FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
                 )
                 .with(StringType)
                 .with(IntegerType)
@@ -94,7 +94,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                    FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
                 )
                 .with(StringType)
                 .with(UnionType(listOf(StringType, UnionType(listOf(IntegerType, StringType)))))

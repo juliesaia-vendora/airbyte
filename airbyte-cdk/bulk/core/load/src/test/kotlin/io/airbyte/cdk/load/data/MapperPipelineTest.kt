@@ -135,7 +135,6 @@ class MapperPipelineTest {
         Assertions.assertEquals(2, result.meta?.changes?.size, "two failures were captured")
     }
 
-
     @Test
     fun testFailedMappingThrowsOnNonNullable() {
         val (inputValue, inputSchema, _) =
